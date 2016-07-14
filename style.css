@@ -1,0 +1,14 @@
+.section {
+  padding: 1em 0;
+}
+
+.header {
+  background: linear-gradient(to bottom, #337ab7 0%, #135a97 100%);
+  color: white;
+  padding: 1em 0 2em;
+}
+
+#chart svg {
+  display: block;
+  margin: 0 auto;
+}
