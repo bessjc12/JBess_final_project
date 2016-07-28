@@ -1,193 +1,242 @@
-var app;
 
-// Declaring our constants
-var START_YEAR = 1950;
-var END_YEAR = 2015;
-var MAX_RADIUS = 50;
-var TRANSITION_DURATION = 750;
 
-d3.json('data/data.json', function (error, data) {
-  if (error) { throw error; }
-  app.initialize(data);
-});
+d3.queue()
+  .defer(d3.json, 'data/Access_Elec.json')
+  .defer(d3.json, 'data/HAP.json')
+  .defer(d3.json, 'data/countries.json')
+  .awaitAll(function (error, results) {
+    if (error) { throw error; }
+    
+    scatter = new DirectedScatterPlot(results[0]);
+    scatter.update(results[0]);
 
-// // d3.queue() enables us to load multiple data files. Following the example below, we make
-// // additional .defer() calls with additional data files, and they are returned as results[1],
-// // results[2], etc., once they have all finished downloading.
-// d3.queue()
-//   .defer(d3.json, 'data/data.json')
-//   .awaitAll(function (error, results) {
-//     if (error) { throw error; }
-//     app.initialize(results[0]);
-//   });
+    map = new Choropleth(results[1],results[2]);
 
-app = {
-  data: [],
-  components: [],
+    d3.select('#restart').on('click', function () {
 
-  options: {
-    year: START_YEAR
-  },
+        scatter.update(results[0]);
 
-  initialize: function (data) {
-    app.data = data;
+    });
+  });
 
-    // Here we create each of the components on our page, storing them in an array
-    app.components = [
-      new Chart('#chart')
-    ];
 
-    // Add event listeners and the like here
+var margin = {
+	left: 75,
+	right: 50,
+	top: 50,
+	bottom: 75
+};
 
-    // app.resize() will be called anytime the page size is changed
-    d3.select('window').on('resize', app.resize);
 
-    // For demo purposes, let's tick the year every 750ms
-    function incrementYear() {
-      app.options.year += 1;
-      if (app.options.year > END_YEAR) {
-        app.options.year = START_YEAR;
-      }
+var width = 625 - margin.left - margin.right;
+var height = 625 - margin.top - margin.bottom;
 
-      app.update();
-    }
 
-    setInterval(incrementYear, TRANSITION_DURATION);
-    // d3.interval(incrementYear, TRANSITION_DURATION);
-  },
-
-  resize: function () {
-    app.components.forEach(function (c) { if (c.resize) { c.resize(); }});
-  },
-
-  update: function () {
-    app.components.forEach(function (c) { if (c.update) { c.update(); }});
-  }
-}
-
-function Chart(selector) {
-  var chart = this;
-
-  // SVG and MARGINS
-
-  var margin = {
-    top: 15, right: 15, bottom: 40, left: 45
-  };
-
-  chart.width = 600 - margin.left - margin.right;
-  chart.height = 400 - margin.top - margin.bottom;
-
-  chart.svg = d3.select(selector)
-    .append('svg')
-    .attr('width', chart.width + margin.left + margin.right)
-    .attr('height', chart.height + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-  // SCALES
-
-  chart.x = d3.scale.linear()
-    .domain([0, d3.max(app.data, function (d) { return d.total_fertility; })])
-    .range([0, chart.width])
-    .nice();
-
-  chart.y = d3.scale.linear()
-    .domain([0, d3.max(app.data, function (d) { return d.life_expectancy; })])
-    .range([chart.height, 0])
-    .nice();
-
-  chart.r = d3.scale.sqrt()
-    .domain([0, d3.max(app.data, function (d) { return d.population; })])
-    .range([0, MAX_RADIUS]);
-
-  chart.color = d3.scale.category10();
-
-  // AXES
-
-  var xAxis = d3.svg.axis()
-    .orient('bottom')
-    .scale(chart.x);
-
-  var yAxis = d3.svg.axis()
-    .orient('left')
-    .scale(chart.y);
-
-  chart.svg.append('g')
-    .attr('class', 'x axis')
-    .attr('transform', 'translate(0,' + chart.height + ')')
-    .call(xAxis)
-    .append('text')
-    .attr('y', 30)
-    .attr('x', chart.width)
-    .style('text-anchor', 'end')
-    .style('fill', '#000')
-    .style('font-weight', 'bold')
-    .text('Fertility (births per woman)');
-
-  chart.svg.append('g')
-    .attr('class', 'y axis')
-    .call(yAxis)
-    .append('text')
-    .attr('transform', 'rotate(-90)')
-    .attr('dy', '.71em')
-    .attr('y', -35)
-    .attr('x', 0)
-    .style('text-anchor', 'end')
-    .style('fill', '#000')
-    .style('font-weight', 'bold')
-    .text('Life expectancy (years)');
-
-  // YEAR LABEL
-
-  chart.svg.append('text')
-    .attr('class', 'year')
-    .attr('x', chart.width / 2)
-    .attr('y', chart.height / 2)
-    .attr('dy', '.35em')
-    .style('text-anchor', 'middle')
-    .style('font-size', '230px')
-    .style('font-weight', 'bold')
-    .style('opacity', 0.2)
-    .text(app.options.year);
-
-  chart.update();
-}
-
-Chart.prototype = {
-  update: function () {
+function DirectedScatterPlot(data) {
+    
     var chart = this;
 
-    // TRANSFORM DATA
+    chart.SVG = d3.select("#chart1")
+    	.append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
 
-    var txData = app.data.filter(function (d) { return d.year === app.options.year; });
+    chart.svg = d3.select("svg")
+    	.append("g")
+    	.attr("transform", function(){ return "translate(" + margin.left + "," + margin.top + ")" });
 
-    // UPDATE CHART ELEMENTS
+    chart.xScale = d3.scaleLinear()
+      	.domain([0,100])
+    	.range([0, width])
+    	.nice();
 
-    var yearText = d3.selectAll('.year')
-      .transition().delay(TRANSITION_DURATION / 2)
-      .text(app.options.year);
+    chart.yScale = d3.scaleLinear()
+      	.domain([0, 100])
+    	.range([height, 0]);
 
-    var countries = chart.svg.selectAll('.country')
-      .data(txData);
+    chart.xAxis = d3.axisBottom(chart.xScale).ticks(10, "s");
+	chart.yAxis = d3.axisLeft(chart.yScale).ticks(10, "s");
 
-    countries.enter().append('circle')
-      .attr('class', 'country')
-      .style('fill', function (d) { return chart.color(d.continent); })
-      .style('opacity', 0.75)
-      .attr('r', 0)
-      .attr('cx', chart.width / 2)
-      .attr('cy', chart.height / 2)
+};
 
-    countries
-      .sort(function (a, b) { return b.population - a.population; })
-      .transition().duration(TRANSITION_DURATION)
-      .attr('r', function (d) { return chart.r(d.population); })
-      .attr('cx', function (d) { return chart.x(d.total_fertility); })
-      .attr('cy', function (d) { return chart.y(d.life_expectancy); });
+DirectedScatterPlot.prototype.update = function (data) {
 
-    countries.exit()
-      .transition().duration(TRANSITION_DURATION)
-      .attr('r', 0)
-      .remove();
-  }
-}
+    var chart = this;
+    var full = data.slice();
+
+    chart.svg.selectAll(".circ").remove();
+    chart.svg.selectAll(".year_note").remove();
+    chart.svg.selectAll(".line").remove();
+
+    // Remove existing map on reset:
+    d3.select("#chart2").selectAll("path").remove();
+
+    // Interrupt ongoing transitions:
+    chart.svg.selectAll("*").interrupt();
+
+
+    chart.svg.append("g")
+        .attr("transform", function(){ return "translate(0," + height + ")" })
+        .attr("class", "axis")
+        .call(chart.xAxis);
+
+    chart.svg.append("g")
+        .attr("class", "axis")
+        .call(chart.yAxis);
+
+    chart.svg
+        .append("text")
+        .attr("class", "yAxisLabel")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -(height / 2))
+        .attr("y", -(margin.left * 0.75))
+        .style("text-anchor", "middle")
+        .html("Percentage of Households Cooking with Solid Fuels");
+
+    chart.svg
+        .append("text")
+        .attr("class", "xAxisLabel")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom * 0.75)
+        .style("text-anchor", "middle")
+        .html("Percentage of Population with Access to Electricity");
+
+    chart.svg.selectAll(".circ")
+    	.data(full, function(d){ return d.year }).enter()
+    	.append("circle")
+    	.attr("class", "circ")
+    	.attr("cx", function(d){ return chart.xScale(d.ACCESS_1990) })
+    	.attr("cy", function(d){ return chart.yScale(d.ACCESS_2010) })
+        .transition()
+        .delay(function (d,i){ return (i * 50) })
+        .duration(2000)
+        .ease(d3.easePoly.exponent(3))
+        .attr("r", 8);
+
+    chart.svg.selectAll(".year_note")
+        .data(full).enter()
+        .append("text")
+        .attr("class", "year_note")
+        .attr("x", function(d){ return chart.xScale(d.ACCESS_1990) })
+        .attr("y", function(d){ return chart.yScale(d.ACCESS_2010) })
+        .attr("dx", function(d){ 
+            if (d.year <= 2010){ return 10 }
+            else if (d.year < 2000) { return 2 }
+            else if (d.year < 1995) { return 10 }
+            
+        })
+        .attr("dy", function(d){ 
+            if (d.year <= 2010){ return 3 }
+            else if (d.year < 2000) { return -10 }
+            else if (d.year < 1995) { return 5 }
+            
+        })
+        .text(function(d){ return d.year })
+        .attr("opacity",0)
+        .transition()
+        .delay(function (d,i){ return (i * 50) })
+        .duration(2000)
+        .ease(d3.easePoly.exponent(3)) 
+        // Many more eases here: https://github.com/d3/d3/blob/master/API.md#easings-d3-ease
+        .attr("opacity",1);
+
+
+    // Use d3.line to create a line function that we will use to pass data to our our path's d attribute
+    var line = d3.line()
+        .x(function(d) { return chart.xScale(d.ACCESS_1990); })
+        .y(function(d) { return chart.yScale(d.ACCESS_2010); })
+        .curve(d3.curveCatmullRom.alpha(0.7));
+        
+
+    // Append a new path to the svg, using .datum() since we are binding all of our data to one new path element. We also pass the line variable to the "d" attribute. 
+    chart.svg.append("path")
+        .datum(full)
+        .attr("class", "line")
+        .attr("d", line)
+        .style("opacity",0)
+        .transition().delay(2000).duration(1000).on("end", function(){ map.update(); })
+        .style("opacity", 1);
+
+};	
+
+function Choropleth(change, countries){
+
+    var chart = this;
+
+    chart.svg = d3.select("#chart2")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", function(){ return "translate(" + margin.left + "," + margin.top + ")" });
+
+    // Data merge:
+    for (var i = 0; i < change.length; i++) {
+
+        var dataCountry = change[i].Country;
+        var value_1990 = change[i].ACCESS_1990;
+        var value_2010 = change[i].ACCESS_2010;
+
+        // Find the corresponding country inside the GeoJSON
+        for (var j = 0; j < countries.features.length; j++)  {
+            var jsonCountry = countries.features[j].properties.name;
+
+            if (dataCountry == jsonCountry) {
+            countries.features[j].properties.value_1990 = value_1990; 
+            countries.features[j].properties.value_2010 = value_2010; 
+
+            break;
+
+            };
+        };
+
+    chart.countries = countries;
+
+};
+
+
+Choropleth.prototype.update = function () {
+
+    var chart = this;
+
+    // Interrupt ongoing transitions:  
+    chart.svg.selectAll("*").interrupt();
+
+    chart.colorScale = d3.scaleLinear()
+        .domain([0,100])
+        .range(["#d73027","#4575b4"]);
+
+    // First create a map projection and specify some options:
+    var projection = d3.geoEquirectangular()
+       .translate([width/2, height/2])// Places the map in the center of the SVG
+       .scale([width * .2]); // Scales the size of the map
+
+    // Then pass this projection to d3.geoPath() - which is analagous to d3.line()
+    var projectionPath = d3.geoPath().projection(projection);
+
+    // Now we have this projection path that we can give to the "d" attribute of a new path:
+    chart.map = chart.svg.append("g").attr("transform", "translate(0,30)").selectAll("path")
+        .data(chart.countries.features)
+        .enter()
+        .append("path")
+        .attr("class", "map")
+        .attr("d", projectionPath)
+        .attr("stroke", "black")
+        .attr("fill", function(d){ 
+            return chart.colorScale(d.properties.value_1990);
+        })
+        .transition().duration(5000)
+        .style("fill", function(d){
+            return chart.colorScale(d.properties.value_2010);
+        })
+
+    };
+
+};
+
+
+
+
+
+
+
