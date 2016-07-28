@@ -19,7 +19,6 @@ d3.queue()
     });
   });
 
-
 var margin = {
 	left: 75,
 	right: 50,
@@ -27,10 +26,8 @@ var margin = {
 	bottom: 75
 };
 
-
 var width = 625 - margin.left - margin.right;
 var height = 625 - margin.top - margin.bottom;
-
 
 function DirectedScatterPlot(data) {
     
@@ -74,7 +71,6 @@ DirectedScatterPlot.prototype.update = function (data) {
     // Interrupt ongoing transitions:
     chart.svg.selectAll("*").interrupt();
 
-
     chart.svg.append("g")
         .attr("transform", function(){ return "translate(0," + height + ")" })
         .attr("class", "axis")
@@ -102,7 +98,7 @@ DirectedScatterPlot.prototype.update = function (data) {
         .html("Percentage of Population with Access to Electricity");
 
     chart.svg.selectAll(".circ")
-    	.data(full, function(d){ return d.year }).enter()
+    	.data(full, function(d){ return d.country }).enter()
     	.append("circle")
     	.attr("class", "circ")
     	.attr("cx", function(d){ return chart.xScale(d.ACCESS_1990) })
@@ -113,26 +109,26 @@ DirectedScatterPlot.prototype.update = function (data) {
         .ease(d3.easePoly.exponent(3))
         .attr("r", 8);
 
-    chart.svg.selectAll(".year_note")
+    chart.svg.selectAll(".id")
         .data(full).enter()
         .append("text")
-        .attr("class", "year_note")
+        .attr("class", "id")
         .attr("x", function(d){ return chart.xScale(d.ACCESS_1990) })
         .attr("y", function(d){ return chart.yScale(d.ACCESS_2010) })
         .attr("dx", function(d){ 
-            if (d.year <= 2010){ return 10 }
-            else if (d.year < 2000) { return 2 }
-            else if (d.year < 1995) { return 10 }
+            if (d.id <= 2010){ return 10 }
+            else if (d.id < 2010) { return 2}
+            else if (d.id < 1995) { return 10}
             
         })
         .attr("dy", function(d){ 
             if (d.year <= 2010){ return 3 }
-            else if (d.year < 2000) { return -10 }
+            else if (d.year < 2010) { return -10 }
             else if (d.year < 1995) { return 5 }
             
         })
-        .text(function(d){ return d.year })
-        .attr("opacity",0)
+        .text(function(d){ return d.id })
+        .attr("opacity",10)
         .transition()
         .delay(function (d,i){ return (i * 50) })
         .duration(2000)
@@ -140,12 +136,11 @@ DirectedScatterPlot.prototype.update = function (data) {
         // Many more eases here: https://github.com/d3/d3/blob/master/API.md#easings-d3-ease
         .attr("opacity",1);
 
-
     // Use d3.line to create a line function that we will use to pass data to our our path's d attribute
     var line = d3.line()
-        .x(function(d) { return chart.xScale(d.ACCESS_1990); })
-        .y(function(d) { return chart.yScale(d.ACCESS_2010); })
-        .curve(d3.curveCatmullRom.alpha(0.7));
+        //.x(function(d) { return chart.xScale(d.ACCESS_1990); })
+        //.y(function(d) { return chart.yScale(d.ACCESS_2010); })
+        //.curve(d3.curveCatmullRom.alpha(0.7));
         
 
     // Append a new path to the svg, using .datum() since we are binding all of our data to one new path element. We also pass the line variable to the "d" attribute. 
@@ -174,31 +169,25 @@ function Choropleth(change, countries){
     for (var i = 0; i < change.length; i++) {
 
         var dataCountry = change[i].Country;
-        var value_1990 = change[i].ACCESS_1990;
-        var value_2010 = change[i].ACCESS_2010;
+        var value_1990 = change[i].CO2KWHd1_2016;
+        //var value_2010 = change[i].ACCESS_2010;
 
         // Find the corresponding country inside the GeoJSON
         for (var j = 0; j < countries.features.length; j++)  {
             var jsonCountry = countries.features[j].properties.name;
 
             if (dataCountry == jsonCountry) {
-            countries.features[j].properties.value_1990 = value_1990; 
-            countries.features[j].properties.value_2010 = value_2010; 
-
+            countries.features[j].properties.value_2016 = value_2016; 
+            //countries.features[j].properties.value_2010 = value_2010; 
             break;
-
             };
         };
-
     chart.countries = countries;
 
 };
-
-
 Choropleth.prototype.update = function () {
 
     var chart = this;
-
     // Interrupt ongoing transitions:  
     chart.svg.selectAll("*").interrupt();
 
@@ -222,8 +211,8 @@ Choropleth.prototype.update = function () {
         .attr("class", "map")
         .attr("d", projectionPath)
         .attr("stroke", "black")
-        .attr("fill", function(d){ 
-            return chart.colorScale(d.properties.value_1990);
+        .style("fill", function(d){ 
+            return chart.colorScale(d.properties.value_2016);
         })
         .transition().duration(5000)
         .style("fill", function(d){
