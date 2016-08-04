@@ -1,5 +1,7 @@
 d3.queue()
-  .defer(d3.json, 'data/Access_Elec_HAP_CO2.json')
+  .defer(d3.json, 'data/Access_Elec.json')
+  .defer(d3.json, 'data/HAP.json')
+  .defer(d3.json, 'data/countries.json')
   .awaitAll(function (error, results) {
     if (error) { throw error; }
     
@@ -83,7 +85,7 @@ DirectedScatterPlot.prototype.update = function (data) {
         .attr("x", -(height / 2))
         .attr("y", -(margin.left * 0.75))
         .style("text-anchor", "middle")
-        .html("CO2 Emissions per KWH Electricity Produced");
+        .html("Percentage of Households Cooking with Solid Fuels");
 
     chart.svg
         .append("text")
@@ -97,8 +99,8 @@ DirectedScatterPlot.prototype.update = function (data) {
     	.data(full, function(d){ return d.country }).enter()
     	.append("circle")
     	.attr("class", "circ")
-    	.attr("cx", function(d){ return chart.xScale(d.ACCESS_2010) })
-    	.attr("cy", function(d){ return chart.yScale(d.CO2KWHd1_2016) })
+    	.attr("cx", function(d){ return chart.xScale(d.ACCESS_1990) })
+    	.attr("cy", function(d){ return chart.yScale(d.ACCESS_2010) })
         .transition()
         .delay(function (d,i){ return (i * 50) })
         .duration(2000)
@@ -109,8 +111,8 @@ DirectedScatterPlot.prototype.update = function (data) {
         .data(full).enter()
         .append("text")
         .attr("class", "id")
-        .attr("x", function(d){ return chart.xScale(d.ACCESS_2010) })
-        .attr("y", function(d){ return chart.yScale(d.CO2KWHd1_2016) })
+        .attr("x", function(d){ return chart.xScale(d.ACCESS_1990) })
+        .attr("y", function(d){ return chart.yScale(d.ACCESS_2010) })
         .attr("dx", function(d){ 
             if (d.id <= 2010){ return 10 }
             else if (d.id < 2010) { return 2}
@@ -133,7 +135,7 @@ DirectedScatterPlot.prototype.update = function (data) {
         .attr("opacity",1);
 
     // Use d3.line to create a line function that we will use to pass data to our our path's d attribute
-    //var line = d3.line()
+    var line = d3.line()
         //.x(function(d) { return chart.xScale(d.ACCESS_1990); })
         //.y(function(d) { return chart.yScale(d.ACCESS_2010); })
         //.curve(d3.curveCatmullRom.alpha(0.7));
@@ -165,7 +167,8 @@ function Choropleth(change, countries){
     for (var i = 0; i < change.length; i++) {
 
         var dataCountry = change[i].Country;
-        var value_2016 = change[i].CO2KWHd1_2016;
+        var value_1990 = change[i].CO2KWHd1_2016;
+        //var value_2010 = change[i].ACCESS_2010;
 
         // Find the corresponding country inside the GeoJSON
         for (var j = 0; j < countries.features.length; j++)  {
@@ -193,7 +196,7 @@ Choropleth.prototype.update = function () {
     // First create a map projection and specify some options:
     var projection = d3.geoEquirectangular()
        .translate([width/2, height/2])// Places the map in the center of the SVG
-       .scale([width * 1.5]); // Scales the size of the map
+       .scale([width * .2]); // Scales the size of the map
 
     // Then pass this projection to d3.geoPath() - which is analagous to d3.line()
     var projectionPath = d3.geoPath().projection(projection);
@@ -211,7 +214,7 @@ Choropleth.prototype.update = function () {
         })
         .transition().duration(5000)
         .style("fill", function(d){
-            return chart.colorScale(d.properties.value_2016);
+            return chart.colorScale(d.properties.value_2010);
         })
 
     };
