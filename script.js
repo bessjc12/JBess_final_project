@@ -1,5 +1,5 @@
 d3.queue()
-  .defer(d3.json, 'data/Access_Elec_HAP_CO2.json')
+  .defer(d3.json,'data/Access_Elec_HAP_CO2.json')
   .awaitAll(function (error, results) {
     if (error) { throw error; }
     
