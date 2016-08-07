@@ -44,7 +44,7 @@ function DirectedScatterPlot(data) {
     	.nice();
 
     chart.yScale = d3.scaleLinear()
-      	.domain([0, 100])
+      	.domain([-.11, .76])
     	.range([height, 0]);
 
     chart.xAxis = d3.axisBottom(chart.xScale).ticks(10, "s");
@@ -133,10 +133,10 @@ DirectedScatterPlot.prototype.update = function (data) {
         .attr("opacity",1);
 
     // Use d3.line to create a line function that we will use to pass data to our our path's d attribute
-    //var line = d3.line()
-        //.x(function(d) { return chart.xScale(d.ACCESS_1990); })
-        //.y(function(d) { return chart.yScale(d.ACCESS_2010); })
-        //.curve(d3.curveCatmullRom.alpha(0.7));
+    var line = d3.line()
+        .x(function(d) { return chart.xScale(d.ACCESS_2010); })
+        .y(function(d) { return chart.yScale(d.CO2KWHd1_2016); })
+        .curve(d3.curveCatmullRom.alpha(0.7));
         
 
     // Append a new path to the svg, using .datum() since we are binding all of our data to one new path element. We also pass the line variable to the "d" attribute. 
@@ -166,7 +166,7 @@ function Choropleth(change, countries){
 
         var dataCountry = change[i].Country;
         var value_2016 = change[i].CO2KWHd1_2016;
-
+    
         // Find the corresponding country inside the GeoJSON
         for (var j = 0; j < countries.features.length; j++)  {
             var jsonCountry = countries.features[j].properties.name;
@@ -215,8 +215,8 @@ Choropleth.prototype.update = function () {
         })
 
     };
-
 };
+
 
 
 
