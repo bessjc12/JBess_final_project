@@ -6,7 +6,7 @@ d3.queue()
     scatter = new DirectedScatterPlot(results[0]);
     scatter.update(results[0]);
 
-    map = new Choropleth(results[1],results[2]);
+    map = new Choropleth(results[0]);
 
     d3.select('#restart').on('click', function () {
 
@@ -44,7 +44,7 @@ function DirectedScatterPlot(data) {
     	.nice();
 
     chart.yScale = d3.scaleLinear()
-      	.domain([-.11, .76])
+      	.domain([-.20, .80])
     	.range([height, 0]);
 
     chart.xAxis = d3.axisBottom(chart.xScale).ticks(10, "s");
@@ -58,7 +58,7 @@ DirectedScatterPlot.prototype.update = function (data) {
     var full = data.slice();
 
     chart.svg.selectAll(".circ").remove();
-    chart.svg.selectAll(".year_note").remove();
+    //chart.svg.selectAll(".year_note").remove();
     chart.svg.selectAll(".line").remove();
 
     // Remove existing map on reset:
@@ -111,18 +111,18 @@ DirectedScatterPlot.prototype.update = function (data) {
         .attr("class", "id")
         .attr("x", function(d){ return chart.xScale(d.ACCESS_2010) })
         .attr("y", function(d){ return chart.yScale(d.CO2KWHd1_2016) })
-        .attr("dx", function(d){ 
-            if (d.id <= 2010){ return 10 }
-            else if (d.id < 2010) { return 2}
-            else if (d.id < 1995) { return 10}
+        //.attr("dx", function(d){ 
+            //if (d.id <= 2010){ return 10 }
+            //else if (d.id < 2010) { return 2}
+            //else if (d.id < 1995) { return 10}
             
-        })
-        .attr("dy", function(d){ 
-            if (d.year <= 2010){ return 3 }
-            else if (d.year < 2010) { return -10 }
-            else if (d.year < 1995) { return 5 }
+        //})
+        //.attr("dy", function(d){ 
+            //if (d.year <= 2010){ return 3 }
+            //else if (d.year < 2010) { return -10 }
+            //else if (d.year < 1995) { return 5 }
             
-        })
+        //})
         .text(function(d){ return d.id })
         .attr("opacity",10)
         .transition()
@@ -133,19 +133,19 @@ DirectedScatterPlot.prototype.update = function (data) {
         .attr("opacity",1);
 
     // Use d3.line to create a line function that we will use to pass data to our our path's d attribute
-    var line = d3.line()
-        .x(function(d) { return chart.xScale(d.ACCESS_2010); })
-        .y(function(d) { return chart.yScale(d.CO2KWHd1_2016); })
-        .curve(d3.curveCatmullRom.alpha(0.7));
+    //var line = d3.line()
+        //.x(function(d) { return chart.xScale(d.ACCESS_2010); })
+        //.y(function(d) { return chart.yScale(d.CO2KWHd1_2016); })
+        //.curve(d3.curveCatmullRom.alpha(0.7));
         
 
     // Append a new path to the svg, using .datum() since we are binding all of our data to one new path element. We also pass the line variable to the "d" attribute. 
     chart.svg.append("path")
         .datum(full)
         .attr("class", "line")
-        .attr("d", line)
+        //.attr("d", line)
         .style("opacity",0)
-        .transition().delay(2000).duration(1000).on("end", function(){ map.update(); })
+        .transition().delay(2000).duration(1000).on("end", function(){map.update(); })
         .style("opacity", 1);
 
 };	
@@ -187,7 +187,7 @@ Choropleth.prototype.update = function () {
     chart.svg.selectAll("*").interrupt();
 
     chart.colorScale = d3.scaleLinear()
-        .domain([0,100])
+        .domain([-.20,.80])
         .range(["#d73027","#4575b4"]);
 
     // First create a map projection and specify some options:
