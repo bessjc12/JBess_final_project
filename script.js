@@ -98,7 +98,7 @@ DirectedScatterPlot.prototype.update = function (data) {
         .data(full, function(d){ return d.country }).enter()
         .append("circle")
         .attr("class", "circ")
-        .attr("cx", function(d){ return chart.xScale(d.ACCESS_2010) })
+        .attr("cx", function(d){ return chart.xScale(d.ACCESS_1990) })
         .attr("cy", function(d){ return chart.yScale(d.CO2KWHd1_2016) })
         .transition()
         .delay(function (d,i){ return (i * 50) })
@@ -110,7 +110,7 @@ DirectedScatterPlot.prototype.update = function (data) {
         .data(full).enter()
         .append("text")
         .attr("class", "id")
-        .attr("x", function(d){ return chart.xScale(d.ACCESS_2010) })
+        .attr("x", function(d){ return chart.xScale(d.ACCESS_1990) })
         .attr("y", function(d){ return chart.yScale(d.CO2KWHd1_2016) })
         //.attr("dx", function(d){
             //if (d.id <= 2010){ return 10 }
