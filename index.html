@@ -24,10 +24,20 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-              <br>
-              <button type="button" id="restart" class="btn btn-primary">Restart Animation</button>
+            <div class="col-md-3 col-sm-3 col-xs-3">
+            <div class="controls section">
+              <label for="categories" class="category-label">Select Region: 
+              </label>
+            <div id="tab" class="btn-group" data-toggle="buttons">
+                <button type="button" class="btn btn-info active" id="sort_math" value="m_diff" autocomplete="off" checked="" data-toggle="tab">South America
+                </button>            
+                <button type="button" class="btn btn-info active" id="sort_read" value="r_diff" autocomplete="off" data-toggle="tab">Africa
+              </button>
+              <button type="button" class="btn btn-info active" id="sort_read" value="r_diff" autocomplete="off" data-toggle="tab">SouthEast Asia
+              </button>
             </div>
+            </div>
+          </div>
         </div>
     </div>
 </div>  
@@ -37,7 +47,17 @@
   <div class="container">
     <div class="row">
       <div id="chart1" class="col-md-6"></div>
+    </div>
+    <div class="row">
       <div id="chart2" class="col-md-6"></div>
+        <div class="col-md-6">
+          <div id="titleparent">
+            <div id="titleholder">
+              <h3>CO2 emissions trends per KWH produced in developing countries</h3>
+            </div>   
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
