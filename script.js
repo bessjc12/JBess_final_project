@@ -208,11 +208,7 @@ Choropleth.prototype.update = function () {
         .append("path")
         .attr("class", "map")
         .attr("d", projectionPath)
-<<<<<<< HEAD
         .attr("stroke", "gray")
-=======
-        .attr("stroke", "black")
->>>>>>> 48be59929b8258449875f87e52d7383eb77c501f
         .style("fill", function(d){
             return chart.colorScale(d.properties.value_2016);
         })
@@ -220,8 +216,5 @@ Choropleth.prototype.update = function () {
         .style("fill", function(d){
             return chart.colorScale(d.properties.value_2016);
         })
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> 48be59929b8258449875f87e52d7383eb77c501f
+
