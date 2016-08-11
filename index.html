@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Environmental Impact of Increased Access to Electric Power</title>
+
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div id="opening">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div id="titleparent">
+                    <div id="titleholder">
+                        <h1 class="projtitle">Developing World Relationship: Electricity Access and Improved Environmental Health</h1>
+                        <h4>Compare the relationship between increased access to electricity and  <br>
+                            CO2 Emissions per KWH produced in developing countries</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-3 col-xs-3">
+            <div class="controls section">
+              <label for="categories" class="category-label">Select Region: 
+              </label>
+            <div id="tab" class="btn-group" data-toggle="buttons">
+                <button type="button" class="btn btn-info active" id="sort_math" value="m_diff" autocomplete="off" checked="" data-toggle="tab">South America
+                </button>            
+                <button type="button" class="btn btn-info active" id="sort_read" value="r_diff" autocomplete="off" data-toggle="tab">Africa
+              </button>
+              <button type="button" class="btn btn-info active" id="sort_read" value="r_diff" autocomplete="off" data-toggle="tab">SouthEast Asia
+              </button>
+            </div>
+            </div>
+          </div>
+        </div>
+    </div>
+</div>  
+
+
+<div class="main section">
+  <div class="container">
+    <div class="row">
+      <div id="chart1" class="col-md-6"></div>
+    </div>
+    <div class="row">
+      <div id="chart2" class="col-md-6"></div>
+        <div class="col-md-6">
+          <div id="titleparent">
+            <div id="titleholder">
+              <h3>CO2 emissions trends per KWH produced in developing countries</h3>
+            </div>   
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript" src="lib/d3.v4.min.js"></script>
+<script src="lib/jquery-2.2.1.min.js"></script>
+<script src="lib/bootstrap.min.js"></script>
+<script type="text/javascript" src="script.js"></script>
+</body>
+</html>
