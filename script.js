@@ -191,7 +191,7 @@ Choropleth.prototype.update = function () {
 
     chart.colorScale = d3.scaleLinear()
         .domain([-.20,.80])
-        .range(["#ff0000","#009933"]);
+        .range(["#009933","#ff0000"]);
 
     // First create a map projection and specify some options:
     var projection = d3.geoEquirectangular()
