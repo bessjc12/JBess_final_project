@@ -10,7 +10,7 @@ d3.queue()
     map = new Choropleth(results[0], results[1]);
 
     d3.select('#restart').on('click', function () {
-
+        map.clean()
         scatter.update(results[0]);
 
     });
@@ -23,8 +23,11 @@ var margin = {
     bottom: 75
 };
 
+var stg_dur = 200;
+var stg_delay = 350;
+
 var width = 625 - margin.left - margin.right;
-var height = 625 - margin.top - margin.bottom;
+var height = 450 - margin.top - margin.bottom;
 
 function DirectedScatterPlot(data) {
 
@@ -106,24 +109,31 @@ DirectedScatterPlot.prototype.update = function (data) {
         .ease(d3.easePoly.exponent(3))
         .attr("r", 8);
 
+    //chart.svg
+        //.on("mouseover", function(d) {
+            //chart.tooltip.transition()
+                //.duration(200)
+                //.style("opacity", 1)
+                //.style("left", (d3.event.pageX)+ "px")
+                //.style("top", (d3.event.pageY -28) + "px");
+//
+            //chart.tooltip.append("p")
+                //.attr("class", "tooltip_text")
+                //.html(d.ACCESS_1990)
+       // })
+        //.on("mouseout", function(d) {
+            //chart.tooltip.html("")
+            //.transition()
+            //.duration(500)
+            //.style("opacity", 0)
+       // });
+
     chart.svg.selectAll(".id")
         .data(full).enter()
         .append("text")
         .attr("class", "id")
         .attr("x", function(d){ return chart.xScale(d.ACCESS_1990) })
         .attr("y", function(d){ return chart.yScale(d.CO2KWHd1_2016) })
-        //.attr("dx", function(d){
-            //if (d.id <= 2010){ return 10 }
-            //else if (d.id < 2010) { return 2}
-            //else if (d.id < 1995) { return 10}
-
-        //})
-        //.attr("dy", function(d){
-            //if (d.year <= 2010){ return 3 }
-            //else if (d.year < 2010) { return -10 }
-            //else if (d.year < 1995) { return 5 }
-
-        //})
         .text(function(d){ return d.id })
         .attr("opacity",10)
         .transition()
@@ -133,22 +143,17 @@ DirectedScatterPlot.prototype.update = function (data) {
         // Many more eases here: https://github.com/d3/d3/blob/master/API.md#easings-d3-ease
         .attr("opacity",1);
 
-    // Use d3.line to create a line function that we will use to pass data to our our path's d attribute
-    //var line = d3.line()
-        //.x(function(d) { return chart.xScale(d.ACCESS_2010); })
-        //.y(function(d) { return chart.yScale(d.CO2KWHd1_2016); })
-        //.curve(d3.curveCatmullRom.alpha(0.7));
-
-
     // Append a new path to the svg, using .datum() since we are binding all of our data to one new path element. We also pass the line variable to the "d" attribute.
     chart.svg.append("path")
         .datum(full)
         .attr("class", "line")
-        //.attr("d", line)
         .style("opacity",0)
         .transition().delay(2000).duration(1000).on("end", function(){map.update(); })
         .style("opacity", 1);
 
+    chart.tooltip = d3.select("body").append("div")   
+          .attr("class", "tooltip")               
+          .style("opacity", 0);
 };
 
 function Choropleth(change, countries){
@@ -166,19 +171,24 @@ function Choropleth(change, countries){
     for (var i = 0; i < change.length; i++) {
 
         var dataCountry = change[i].country;
-        var value_2016 = change[i].CO2KWHd1_2016;
+        var value_1990 = change[i].ACCESS_1990;
+        var value_2012 = change[i].ACCESS_2012;
 
         // Find the corresponding country inside the GeoJSON
         for (var j = 0; j < countries.features.length; j++)  {
             var jsonCountry = countries.features[j].properties.name;
 
             if (dataCountry == jsonCountry) {
-            countries.features[j].properties.value_2016 = value_2016;
-            //countries.features[j].properties.value_2010 = value_2010;
+            countries.features[j].properties.value_1990 = value_1990;
+            countries.features[j].properties.value_2000 = value_2012;
             break;
             };
         };
     };
+    chart.tooltip = d3.select("body").append("div")   
+          .attr("class", "tooltip")               
+          .style("opacity", 0);
+
     chart.countries = countries;
 
 };
@@ -189,9 +199,34 @@ Choropleth.prototype.update = function () {
     // Interrupt ongoing transitions:
     chart.svg.selectAll("*").interrupt();
 
+    chart.title_text = chart.svg.append("g").attr("transform", "translate(0,0)")
+
+    chart.color_range = ["#d73027","#f46d43","#fdae61","#fee090","#ffffbf","#e0f3f8","#abd9e9","#74add1","#4575b4"];
+    chart.data_bins = [0,10,20,30,40,50,60,80,90,100];
+
     chart.colorScale = d3.scaleLinear()
-        .domain([-.20,.80])
-        .range(["#009933","#ff0000"]);
+        .domain(chart.data_bins)
+        .range(chart.color_range);
+
+    chart.xScale = d3.scaleLinear()
+        .domain([0, 100])
+        .range([0, width])
+
+    chart.xAxis = d3.axisTop(chart.xScale).ticks(20)
+
+    chart.svg
+        .append("text")
+        .attr("class", "xAxisLabel")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom * 0.75)
+        .style("text-anchor", "middle")
+        .html("Percentage of Developing Countries Population with Access to Electricity in 1990");
+
+    chart.defs = chart.svg.append('defs')
+
+    chart.tooltip = d3.select("body").append("div")   
+        .attr("class", "tooltip")               
+        .style("opacity", 0);
 
     // First create a map projection and specify some options:
     var projection = d3.geoEquirectangular()
@@ -208,29 +243,41 @@ Choropleth.prototype.update = function () {
         .append("path")
         .attr("class", "map")
         .attr("d", projectionPath)
-        .attr("stroke", "gray")
-        .style("fill", function(d){
-            return chart.colorScale(d.properties.value_2016);
-        })
-        .transition().duration(5000)
-        .style("fill", function(d){
-            return chart.colorScale(d.properties.value_2016);
-        })
-    
-    //var tip = d3.tip()
-        //.attr('class', 'd3-tip')
-        //.offset([-10,0])
-        //.html(function(d) {
-            //return "<strong>value_2016:</strong> <span style ='color:red'>" + d.value_2016 + "</span>";
-        //});
-    //var svg = tip
-    //svg.call(tip);
+        .attr("stroke", "gray");
 
-    //vis.selectAll("circle")
-        //.data(datafiltered).enter().append("svg.circle")
+    chart.map
+        .on("mouseover", function(d) {
+            chart.tooltip.transition()
+                .duration(200)
+                .style("opacity", 1)
+                .style("left", (d3.event.pageX)+ "px")
+                .style("top", (d3.event.pageY -28) + "px");
 
-        //.on('mouseover', tip.show)
-        //.on('mouseout', tip.hide);
-};
+            chart.tooltip.append("p")
+                .attr("class", "tooltip_text")
+                .html(d.properties.name + ":" + d.properties.value_1990 + "%")
+        })
+        .on("mouseout", function(d) {
+            chart.tooltip.html("")
+            .transition()
+            .duration(500)
+            .style("opacity", 0)
+        });
+
+    chart.map
+        .style("fill", "white")
+        //.transition().delay(2000).duration(1000)
+        .style("fill", function(d) {
+            return chart.colorScale(d.properties.value_1990);
+        });
+
+
+    };
+        
+        
+
+
+
+
 
 

@@ -3,12 +3,17 @@ body {
     width: 100%;
     height: 100%;
     overflow-x: hidden;
+    background: lightgreen; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(red, yellow,lightgreen); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(red, yellow,lightgreen); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(red, yellow,lightgreen); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(red, yellow,lightgreen); /* Standard syntax */
 }
 
 body {
     font-family: Lato, sans-serif !important;
     font-weight: 400;
-    font-size: 16pt;
+    font-size: 8pt;
     color: #666;
 }
 
@@ -86,4 +91,12 @@ p.tooltip_text {
     font: 400 16px/24px Lato, sans-serif;
     margin: 0 0 .5em;
     color: #666;
+}
+.grid line {
+stroke: lightgrey;
+stroke-opacity: 0.7;
+shape-rendering: crispEdges;
+}
+.grid path {
+stroke-width: 0;
 }
